@@ -9,12 +9,10 @@ resource "aws_vpc" "main" {
   }
 }
 
-
 #################################
 ### SUBNET BLOCK
 #################################
-
-resource "aws_subnet" "public_subnet" {
+resource "aws_subnet" "public_subnet_1a" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "us-east-1a"
@@ -24,7 +22,7 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 
-resource "aws_subnet" "private_subnet" {
+resource "aws_subnet" "private_subnet_1a" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.100.0/24"
   availability_zone = "us-east-1a"
@@ -58,7 +56,7 @@ resource "aws_eip" "nat_gw_eip" {
 #################################
 resource "aws_nat_gateway" "nat_gw_1a" {
   allocation_id = aws_eip.nat_gw_eip.id
-  subnet_id     = aws_subnet.public_subnet.id
+  subnet_id     = aws_subnet.public_subnet_1a.id
 
   tags = {
     Name = "nat_gw_1a"
@@ -102,11 +100,11 @@ resource "aws_route_table" "private_rtbl_1a" {
 ### ROUTE TABLE ASSOCIATION BLOCK
 #################################
 resource "aws_route_table_association" "public_rtbl_associate" {
-  subnet_id      = aws_subnet.public_subnet.id
+  subnet_id      = aws_subnet.public_subnet_1a.id
   route_table_id = aws_route_table.public_rtbl.id
 }
 
 resource "aws_route_table_association" "private_rtbl_1a_associate" {
-  subnet_id      = aws_subnet.public_subnet.id
+  subnet_id      = aws_subnet.private_subnet_1a.id
   route_table_id = aws_route_table.private_rtbl_1a.id
 }
