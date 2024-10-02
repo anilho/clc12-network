@@ -14,11 +14,21 @@ resource "aws_vpc" "main" {
 #################################
 resource "aws_subnet" "public_subnet_1a" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
+  cidr_block        = "10.0.0.0/24"
   availability_zone = "us-east-1a"
 
   tags = {
     Name = "tf_public_subnet_1a"
+  }
+}
+
+resource "aws_subnet" "public_subnet_1b" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "tf_public_subnet_1b"
   }
 }
 
@@ -31,6 +41,18 @@ resource "aws_subnet" "private_subnet_1a" {
     Name = "tf_private_subnet_1a"
   }
 }
+
+resource "aws_subnet" "private_subnet_1b" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.101.0/24"
+  availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "tf_private_subnet_1b"
+  }
+}
+
+
 
 #################################
 ### INTERNET GATEWAY BLOCK
@@ -47,7 +69,11 @@ resource "aws_internet_gateway" "igw" {
 #################################
 ### ELASTIC IP FOR NAT BLOCK
 #################################
-resource "aws_eip" "nat_gw_eip" {
+resource "aws_eip" "nat_gw_1a_eip" {
+  domain = "vpc"
+}
+
+resource "aws_eip" "nat_gw_1b_eip" {
   domain = "vpc"
 }
 
@@ -55,7 +81,7 @@ resource "aws_eip" "nat_gw_eip" {
 ### NAT GATEWAY BLOCK
 #################################
 resource "aws_nat_gateway" "nat_gw_1a" {
-  allocation_id = aws_eip.nat_gw_eip.id
+  allocation_id = aws_eip.nat_gw_1a_eip.id
   subnet_id     = aws_subnet.public_subnet_1a.id
 
   tags = {
@@ -64,7 +90,20 @@ resource "aws_nat_gateway" "nat_gw_1a" {
 
   # To ensure proper ordering, it is recommended to add an explicit dependency
   # on the Internet Gateway for the VPC.
-  depends_on = [aws_internet_gateway.igw, aws_eip.nat_gw_eip]
+  depends_on = [aws_internet_gateway.igw, aws_eip.nat_gw_1a_eip]
+}
+
+resource "aws_nat_gateway" "nat_gw_1b" {
+  allocation_id = aws_eip.nat_gw_1b_eip.id
+  subnet_id     = aws_subnet.public_subnet_1b.id
+
+  tags = {
+    Name = "nat_gw_1b"
+  }
+
+  # To ensure proper ordering, it is recommended to add an explicit dependency
+  # on the Internet Gateway for the VPC.
+  depends_on = [aws_internet_gateway.igw, aws_eip.nat_gw_1b_eip]
 }
 
 #################################
@@ -96,15 +135,39 @@ resource "aws_route_table" "private_rtbl_1a" {
   }
 }
 
+resource "aws_route_table" "private_rtbl_1b" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gw_1b.id
+  }
+
+  tags = {
+    Name = "tf_private_1b_rtbl"
+  }
+}
+
+
 #################################
 ### ROUTE TABLE ASSOCIATION BLOCK
 #################################
-resource "aws_route_table_association" "public_rtbl_associate" {
+resource "aws_route_table_association" "public_rtbl_1a_associate" {
   subnet_id      = aws_subnet.public_subnet_1a.id
+  route_table_id = aws_route_table.public_rtbl.id
+}
+
+resource "aws_route_table_association" "public_rtbl_1b_associate" {
+  subnet_id      = aws_subnet.public_subnet_1b.id
   route_table_id = aws_route_table.public_rtbl.id
 }
 
 resource "aws_route_table_association" "private_rtbl_1a_associate" {
   subnet_id      = aws_subnet.private_subnet_1a.id
   route_table_id = aws_route_table.private_rtbl_1a.id
+}
+
+resource "aws_route_table_association" "private_rtbl_1b_associate" {
+  subnet_id      = aws_subnet.private_subnet_1b.id
+  route_table_id = aws_route_table.private_rtbl_1b.id
 }
