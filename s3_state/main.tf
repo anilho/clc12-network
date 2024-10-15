@@ -2,7 +2,7 @@ resource "aws_s3_bucket" "state_bucket" {
   bucket = "my-tf-test-bucket"
 
   tags = {
-    Name        = "clc12-network-cerqueira-tfstate"
+    Name        = "clc12-network-cerqueira-aula-tfstate"
     Environment = "Projeto Terraform CLC12"
   }
 }
