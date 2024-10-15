@@ -157,5 +157,5 @@ resource "aws_route_table_association" "public_rtbl_associate_1b" {
 
 resource "aws_route_table_association" "private_rtbl_associate_1b" {
   subnet_id      = aws_subnet.private_subnet_1b.id
-  route_table_id = aws_route_table.private_rtbl_1a.id
+  route_table_id = aws_route_table.private_rtbl_1b.id
 }
