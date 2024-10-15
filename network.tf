@@ -73,6 +73,10 @@ resource "aws_eip" "nat_gw_eip" {
   domain = "vpc"
 }
 
+resource "aws_eip" "nat_gw_eip_1b" {
+  domain = "vpc"
+}
+
 #################################
 ### NAT GATEWAY BLOCK
 #################################
@@ -88,6 +92,21 @@ resource "aws_nat_gateway" "nat_gw_1a" {
   # on the Internet Gateway for the VPC.
   depends_on = [aws_internet_gateway.igw, aws_eip.nat_gw_eip]
 }
+
+
+resource "aws_nat_gateway" "nat_gw_1b" {
+  allocation_id = aws_eip.nat_gw_eip_1b.id
+  subnet_id     = aws_subnet.public_subnet_1b.id
+
+  tags = {
+    Name = "nat_gw_1b"
+  }
+
+  # To ensure proper ordering, it is recommended to add an explicit dependency
+  # on the Internet Gateway for the VPC.
+  depends_on = [aws_internet_gateway.igw, aws_eip.nat_gw_eip_1b]
+}
+
 
 #################################
 ### ROUTE TABLE BLOCK
