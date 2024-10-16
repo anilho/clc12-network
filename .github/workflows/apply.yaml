@@ -15,7 +15,7 @@ jobs:
   Apply:
     name: 'Apply Changes'
     runs-on: ubuntu-latest
-    environment: clc12
+    environment: aws_credentials
 
     defaults:
       run:
