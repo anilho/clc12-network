@@ -15,3 +15,27 @@ module "app_sg" {
   ]
   egress_rules        = ["all-all"]
 }
+
+module "ec2_app_instance" {
+  source  = "terraform-aws-modules/ec2-instance/aws"
+  version = "~> 3.0"
+
+  name = "Web-App-Instance"
+
+  ami                    = "ami-06b21ccaeff8cd686"
+  instance_type          = "t2.micro"
+  key_name               = "vockey"
+  monitoring             = true
+  vpc_security_group_ids = [module.app_sg.security_group_id]
+  subnet_id              = aws_subnet.public_subnet_1a.id
+  user_data              = file("./dependencias.sh")
+}
+
+resource "aws_eip" "ec2_app_instance_ip" {
+  instance = module.ec2_app_instance.id
+  domain = "vpc"
+
+  tags = {
+    Name = "Web-Server-EIP"
+  }
+}
