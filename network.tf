@@ -6,6 +6,7 @@ resource "aws_vpc" "main" {
 
   tags = {
     Name = var.vpc_name
+    Projeto = "CLC12- aula"
   }
 }
 
